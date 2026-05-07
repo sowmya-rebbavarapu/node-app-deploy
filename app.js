@@ -3,6 +3,7 @@ const app = express();
 
 app.get("/", (req, res) => {
   res.send("Hello from Mini IDP 🚀");
+  res.send("CI/CD SUCCESS 🚀");
 });
 
 app.listen(3000, () => {
