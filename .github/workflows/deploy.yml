@@ -1,49 +1,27 @@
-name: Deploy Node App
+script: |
 
-on:
-  push:
-    branches:
-      - main
+  echo "🚀 Connected to EC2"
 
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
+  rm -rf app
 
-    steps:
+  git clone https://github.com/sowmya-rebbavarapu/node-app-deploy.git app
 
-      - name: Checkout Code
-        uses: actions/checkout@v4
+  cd app
 
-      - name: Deploy to EC2
-        uses: appleboy/ssh-action@v1.0.3
+  sudo docker system prune -f
 
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ec2-user
-          key: ${{ secrets.EC2_KEY }}
+  echo "📦 Building Docker image"
 
-          script: |
+  sudo docker build -t idp-app .
 
-            echo "🚀 Connected to EC2"
+  echo "🛑 Removing old container"
 
-            rm -rf app
+  sudo docker stop idp-container || true
+  sudo docker rm idp-container || true
 
-            git clone https://github.com/sowmya-rebbavarapu/node-app-deploy.git app
+  echo "🚀 Starting new container"
 
-            cd app
+  sudo docker run -d -p 3000:3000 \
+    --name idp-container idp-app
 
-            echo "📦 Building Docker image"
-
-            sudo docker build -t idp-app .
-
-            echo "🛑 Removing old container"
-
-            sudo docker stop idp-container || true
-            sudo docker rm idp-container || true
-
-            echo "🚀 Starting new container"
-
-            sudo docker run -d -p 3000:3000 \
-              --name idp-container idp-app
-
-            echo "✅ Deployment completed"
+  echo "✅ Deployment completed"
